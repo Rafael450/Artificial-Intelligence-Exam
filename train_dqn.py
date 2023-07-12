@@ -1,5 +1,6 @@
+
 import os
-import gym
+import gymnasium as gym
 import numpy as np
 import matplotlib.pyplot as plt
 from dqn_agent import DQNAgent
@@ -19,12 +20,13 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 tf.compat.v1.disable_eager_execution()
 
 # Initiating the Mountain Car environment
-env = gym.make('MountainCar-v0')
+env = gym.make('ALE/Frogger-v5', render_mode="human")
 state_size = env.observation_space.shape[0]
 action_size = env.action_space.n
+state_shape = env.observation_space.shape
 
 # Creating the DQN agent
-agent = DQNAgent(state_size, action_size)
+agent = DQNAgent(state_size, state_shape, action_size)
 
 # Checking if weights from previous learning session exists
 if os.path.exists('mountain_car.h5'):
@@ -40,7 +42,9 @@ for episodes in range(1, NUM_EPISODES + 1):
     # Reset the environment
     state = env.reset()
     # This reshape is needed to keep compatibility with Keras
-    state = np.reshape(state, [1, state_size])
+    
+    print(state)
+    state = np.reshape(state[0], [1, state_shape[0], state_shape[1], state_shape[2]])  # Add a new dimension for the batch size
     # Cumulative reward is the return since the beginning of the episode
     cumulative_reward = 0.0
     for time in range(1, 500):
@@ -49,11 +53,12 @@ for episodes in range(1, NUM_EPISODES + 1):
         # Select action
         action = agent.act(state)
         # Take action, observe reward and new state
-        next_state, reward, done, _ = env.step(action)
+        next_state, reward, done, _, _ = env.step(action)
         # Reshaping to keep compatibility with Keras
-        next_state = np.reshape(next_state, [1, state_size])
+        print(next_state)
+        next_state = np.reshape(next_state, [1, state_shape[0], state_shape[1], state_shape[2]])  # Add a new dimension for the batch size
         # Making reward engineering to allow faster training
-        reward = reward_engineering_mountain_car(state[0], action, reward, next_state[0], done)
+        reward = reward_engineering_mountain_car(state, action, reward, next_state[0], done)
         # Appending this experience to the experience replay buffer
         agent.append_experience(state, action, reward, next_state, done)
         state = next_state

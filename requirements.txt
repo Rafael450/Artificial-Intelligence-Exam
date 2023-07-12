@@ -1,0 +1,5 @@
+gym
+tensorflow
+matplotlib
+gym[atari]
+gymnasium[atari, accept-rom-license]

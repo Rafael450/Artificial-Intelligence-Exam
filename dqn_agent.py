@@ -8,7 +8,7 @@ class DQNAgent:
     """
     Represents a Deep Q-Networks (DQN) agent.
     """
-    def __init__(self, state_size, action_size, gamma=0.95, epsilon=0.5, epsilon_min=0.01, epsilon_decay=0.98, learning_rate=0.001, buffer_size=4098):
+    def __init__(self, state_size, state_shape, action_size, gamma=0.95, epsilon=0.5, epsilon_min=0.01, epsilon_decay=0.98, learning_rate=0.001, buffer_size=4098):
         """
         Creates a Deep Q-Networks (DQN) agent.
 
@@ -30,6 +30,7 @@ class DQNAgent:
         :type buffer_size: int.
         """
         self.state_size = state_size
+        self.state_shape = state_shape
         self.action_size = action_size
         self.replay_buffer = deque(maxlen=buffer_size)  # giving a maximum length makes this buffer forget old memories
         self.gamma = gamma
@@ -47,8 +48,11 @@ class DQNAgent:
         :rtype: Keras' model.
         """
         model = models.Sequential()
-        model.add(layers.Dense(24, activation='relu', input_dim=self.state_size))
-        model.add(layers.Dense(24, activation='relu'))
+        model.add(layers.Conv2D(32, (8, 8), strides=(4, 4), activation='relu', input_shape=self.state_shape))
+        model.add(layers.Conv2D(64, (4, 4), strides=(2, 2), activation='relu'))
+        model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+        model.add(layers.Flatten())
+        model.add(layers.Dense(512, activation='relu'))
         model.add(layers.Dense(self.action_size, activation='linear'))
         model.compile(loss=losses.mse,
                       optimizer=optimizers.Adam(learning_rate=self.learning_rate))
