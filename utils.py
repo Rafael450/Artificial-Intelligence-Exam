@@ -1,7 +1,6 @@
-START_POSITION_CAR = -0.5
 
 
-def reward_engineering_mountain_car(state, action, reward, next_state, done):
+def reward_engineering_frogger(lives_count, forward_count, extra_action_rewards,is_past_road, has_started, state, action, reward, next_state, done, info):
     """
     Makes reward engineering to allow faster training in the Mountain Car environment.
 
@@ -18,7 +17,25 @@ def reward_engineering_mountain_car(state, action, reward, next_state, done):
     :return: modified reward for faster training.
     :rtype: float.
     """
-    
+    if reward > 0:
+          has_started = True
+    if has_started:
+          # Additional rewards
+          if action == 1:
+              forward_count += 1
+          if action == 4:
+              forward_count -= 1
+          reward += extra_action_rewards[action]
+          if forward_count == 6 and not is_past_road:
+              reward = 100
+              is_past_road = True
+          # Next Life
+          if  info['lives'] < lives_count:
+              is_past_road = False
+              lives_count = info['lives']
+              forward_count = 0
+              reward = -100
+
     return reward
 
 
